@@ -1,0 +1,62 @@
+.admin-dashboard {
+    padding: 2rem;
+    max-width: 1000px;
+    margin: auto;
+  }
+  
+  .admin-dashboard h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  
+  section {
+    margin-bottom: 2rem;
+  }
+  
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid #eee;
+  }
+  
+  .admin-table th {
+    background-color: #f4f4f4;
+  }
+  
+  .admin-table button {
+    margin-right: 0.5rem;
+    padding: 0.4rem 0.7rem;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .admin-table button.danger {
+    background-color: #e63946;
+  }
+  
+  .admin-table button:hover {
+    opacity: 0.9;
+  }
+
+  .search-bar {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  

@@ -1,118 +1,120 @@
-import { useState, useEffect } from 'react'
-import { useMessages } from '../contexts/MessagesContext'
-import { useUser } from '../contexts/UserContext'
-import { useDonors } from '../contexts/DonorsContext'
-import ConversationList from '../components/messaging/ConversationList'
-import MessageThread from '../components/messaging/MessageThread'
-import { Link } from 'react-router-dom'
-import { FaEnvelope } from 'react-icons/fa'
+import { useEffect, useRef, useState } from 'react'
+import {
+  getChatWithUser,
+  sendMessageToUser,
+  getConversations
+} from '../api/messageApi'
+import './MessagesPage.css'
 
 const MessagesPage = () => {
-  const { currentUser } = useUser()
-  const { donors } = useDonors()
-  const { 
-    conversations, 
-    loading, 
-    getConversationMessages,
-    sendMessage,
-    markAsRead
-  } = useMessages()
-  
-  const [selectedConversationId, setSelectedConversationId] = useState(null)
+  const token = localStorage.getItem('token')
+  const currentUserId = JSON.parse(atob(token.split('.')[1])).id
+
+  const [conversations, setConversations] = useState([])
+  const [selectedUserId, setSelectedUserId] = useState(null)
   const [messages, setMessages] = useState([])
-  const [newMessageText, setNewMessageText] = useState('')
-  
-  // Combine donors and other users for a full user list
-  const [allUsers, setAllUsers] = useState([])
-  
-  // Set up all users
+  const [input, setInput] = useState('')
+  const chatEndRef = useRef(null)
+
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const fetchMessages = async (userId) => {
+    try {
+      const res = await getChatWithUser(userId, token)
+      setMessages(res.data)
+    } catch {
+      setMessages([])
+    }
+  }
+
   useEffect(() => {
-    if (!loading) {
-      // In a real app, this would be fetched from the server
-      // For now, we'll use the donors list as our user list
-      setAllUsers(donors)
-      
-      // Set the first conversation as selected by default
-      if (conversations.length > 0 && !selectedConversationId) {
-        handleSelectConversation(conversations[0].personId)
+    const fetchConversations = async () => {
+      try {
+        const res = await getConversations(token)
+        setConversations(res.data)
+        if (res.data.length) {
+          setSelectedUserId(res.data[0]._id)
+          fetchMessages(res.data[0]._id)
+        }
+      } catch (err) {
+        console.error('Failed to load conversations')
       }
     }
-  }, [loading, donors, conversations])
-  
-  const handleSelectConversation = (personId) => {
-    setSelectedConversationId(personId)
-    
-    // Get messages for this conversation
-    const conversationMessages = getConversationMessages(personId)
-    setMessages(conversationMessages)
-    
-    // Mark unread messages as read
-    const unreadMessages = conversationMessages
-      .filter(msg => msg.receiverId === currentUser.id && !msg.read)
-      .map(msg => msg.id)
-    
-    if (unreadMessages.length > 0) {
-      markAsRead(unreadMessages)
+
+    fetchConversations()
+  }, [])
+
+  const handleSend = async () => {
+    if (!input.trim() || !selectedUserId) return
+    try {
+      const res = await sendMessageToUser(selectedUserId, input, token)
+      setMessages(prev => [...prev, res.data])
+      setInput('')
+    } catch (err) {
+      console.error('Message send failed')
     }
   }
-  
-  const handleSendMessage = (receiverId, content) => {
-    sendMessage(receiverId, content)
-      .then(newMessage => {
-        setMessages(prevMessages => [...prevMessages, newMessage])
-      })
-  }
-  
-  const selectedUser = allUsers.find(user => user.id === selectedConversationId)
+
+  const selectedUser = conversations.find(u => u._id === selectedUserId)
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Messages</h1>
-        <p className="text-gray-600">
-          Communicate with blood donors and recipients. Coordinate donations and follow-ups.
-        </p>
+    <div className="messages-layout">
+      <div className="sidebar">
+        <h2>Chats</h2>
+        {conversations.map(user => (
+          <div
+            key={user._id}
+            className={`chat-item ${user._id === selectedUserId ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedUserId(user._id)
+              fetchMessages(user._id)
+            }}
+          >
+            <div className="avatar">{user.name.charAt(0)}</div>
+            <div>
+              <strong>{user.name}</strong>
+              <p className="preview">
+                {user._id === selectedUserId && messages.length
+                  ? messages[messages.length - 1]?.text.slice(0, 30)
+                  : ''}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center my-12">
-          <div className="w-12 h-12 border-4 border-primary-600 rounded-full animate-spin border-t-transparent"></div>
+      <div className="chat-window">
+        <div className="chat-header">
+          {selectedUser?.name || 'Select a conversation'}
         </div>
-      ) : conversations.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FaEnvelope className="h-8 w-8 text-primary-600" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">No messages yet</h2>
-          <p className="text-gray-600 max-w-md mx-auto mb-6">
-            You don't have any messages yet. Find donors and start a conversation with them.
-          </p>
-          <Link to="/donors" className="btn btn-primary py-2 px-6">
-            Find Donors
-          </Link>
+
+        <div className="chat-messages">
+          {messages.map(msg => (
+            <div
+              key={msg._id}
+              className={`msg ${msg.sender === currentUserId ? 'me' : 'them'}`}
+            >
+              {msg.text}
+            </div>
+          ))}
+          <div ref={chatEndRef} />
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1">
-            <ConversationList 
-              conversations={conversations}
-              selectedConversationId={selectedConversationId}
-              onSelectConversation={handleSelectConversation}
-              allUsers={allUsers}
+
+        {selectedUser && (
+          <div className="chat-input">
+            <input
+              type="text"
+              placeholder="Type your message"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
             />
+            <button onClick={handleSend}>Send</button>
           </div>
-          <div className="md:col-span-2">
-            <MessageThread 
-              messages={messages}
-              selectedUser={selectedUser}
-              currentUser={currentUser}
-              onSendMessage={handleSendMessage}
-              newMessageText={newMessageText}
-              setNewMessageText={setNewMessageText}
-            />
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

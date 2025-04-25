@@ -1,0 +1,81 @@
+.edit-user {
+    max-width: 700px;
+    margin: auto;
+    padding: 2rem;
+  }
+  
+  .edit-user h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+  
+  .edit-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  
+  .form-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  .field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .input-icon {
+    position: relative;
+  }
+  
+  .input-icon svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+  }
+  
+  .input-icon input {
+    width: 100%;
+    padding: 0.6rem 0.6rem 0.6rem 2.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .btn-primary {
+    background-color: #e63946;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .btn-secondary {
+    background-color: #ccc;
+    color: #333;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  

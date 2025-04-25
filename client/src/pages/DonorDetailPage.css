@@ -1,0 +1,89 @@
+.donor-detail-wrapper .donor-detail {
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.donor-detail-wrapper .btn-back {
+  text-decoration: none;
+  color: #e63946;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.donor-detail-wrapper .card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: flex-start;
+  flex-direction: row;
+  gap: 2rem;
+}
+
+.donor-detail-wrapper .info {
+  flex: 1;
+  text-align: left;
+}
+
+.donor-detail-wrapper .info h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  color: #222;
+}
+
+.donor-detail-wrapper .info p {
+  margin: 0.3rem 0;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.donor-detail-wrapper .avatar-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+}
+
+.donor-detail-wrapper .avatar {
+  width: 90px;
+  height: 90px;
+  background: #e63946;
+  color: white;
+  font-size: 2.2rem;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donor-detail-wrapper .button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.donor-detail-wrapper .btn-message {
+  background: #e63946;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.donor-detail-wrapper .btn-message:hover {
+  background-color: #d42c3a;
+}
