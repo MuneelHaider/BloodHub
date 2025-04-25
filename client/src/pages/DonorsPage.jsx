@@ -1,72 +1,103 @@
 import { useState, useEffect } from 'react'
-import { useDonors } from '../contexts/DonorsContext'
-import { useUser } from '../contexts/UserContext'
 import { Link } from 'react-router-dom'
-import DonorCard from '../components/donors/DonorCard'
-import DonorFilter from '../components/donors/DonorFilter'
-import { FaSearch, FaUserPlus } from 'react-icons/fa'
+import './DonorsPage.css'
+import { getAllDonors } from '../api/donorApi'
+
+const bloodTypes = ['All', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
 const DonorsPage = () => {
-  const { donors, loading, searchDonors } = useDonors()
-  const { isAuthenticated } = useUser()
-  const [filteredDonors, setFilteredDonors] = useState([])
-  const [searchParams, setSearchParams] = useState({ location: '', bloodType: '' })
-  const [noResults, setNoResults] = useState(false)
+  const [donors, setDonors] = useState([])
+  const [search, setSearch] = useState('')
+  const [bloodType, setBloodType] = useState('All')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!loading) {
-      handleSearch(searchParams)
+    const fetchDonors = async () => {
+      try {
+        const res = await getAllDonors()
+  
+        console.log('GET /api/donations/donors response:', res.data)
+  
+        if (Array.isArray(res.data)) {
+          setDonors(res.data)
+        } else {
+          console.error('Donor response is not an array:', res.data)
+          setDonors([]) // fallback to empty array
+        }
+  
+        setLoading(false)
+      } catch (err) {
+        setError('Failed to load donors')
+        setDonors([]) // ensure fallback value
+        setLoading(false)
+      }
     }
-  }, [loading, donors])
+  
+    fetchDonors()
+  }, [])
+  
 
-  const handleSearch = (params) => {
-    setSearchParams(params)
-    const results = searchDonors(params.location, params.bloodType)
-    setFilteredDonors(results)
-    setNoResults(results.length === 0)
-  }
+  const filtered = donors.filter(donor => {
+    const matchesSearch = (donor.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+      (donor.location?.toLowerCase() || '').includes(search.toLowerCase()) ||
+      (donor.bloodType?.toLowerCase() || '').includes(search.toLowerCase())
+
+    const matchesType = bloodType === 'All' || donor.bloodType === bloodType
+    return matchesSearch && matchesType
+  })
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Find Blood Donors</h1>
-          <p className="text-gray-600">
-            Search for blood donors by location and blood type. Connect with donors directly to arrange donations.
-          </p>
-        </div>
-        
-        {!isAuthenticated && (
-          <div className="mt-4 md:mt-0">
-            <Link to="/register" className="btn btn-primary py-2 px-4 flex items-center">
-              <FaUserPlus className="mr-2" />
-              Register to Donate
-            </Link>
-          </div>
-        )}
+    <div className="donors-page-wrapper">
+    <div className="donors-page">
+      <h1>Find Blood Donors</h1>
+
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search by name, location or blood type"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button className="btn-search">Search</button>
       </div>
 
-      <DonorFilter onSearch={handleSearch} />
+      <div className="blood-type-filters">
+        {bloodTypes.map(type => (
+          <button
+            key={type}
+            className={`filter-btn ${bloodType === type ? 'active' : ''}`}
+            onClick={() => setBloodType(type)}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
-        <div className="flex justify-center my-12">
-          <div className="w-12 h-12 border-4 border-primary-600 rounded-full animate-spin border-t-transparent"></div>
-        </div>
-      ) : noResults ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-md">
-          <FaSearch className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-xl font-medium text-gray-900 mb-2">No donors found</h3>
-          <p className="text-gray-600 max-w-md mx-auto">
-            We couldn't find any donors matching your search criteria. Try adjusting your filters or check back later.
-          </p>
-        </div>
+        <p>Loading donors...</p>
+      ) : error ? (
+        <p className="error">{error}</p>
+      ) : filtered.length === 0 ? (
+        <p>No donors found.</p>
       ) : (
-        <div className="space-y-4">
-          {filteredDonors.map(donor => (
-            <DonorCard key={donor.id} donor={donor} />
+        <div className="donor-grid">
+          {filtered.map(donor => (
+            <div key={donor._id} className="donor-item">
+              <div className="avatar">{donor.name.charAt(0)}</div>
+              <div className="details">
+                <h3>{donor.name}</h3>
+                <p>Blood Type: {donor.bloodType}</p>
+                <p>Location: {donor.location}</p>
+                <p>Phone: {donor.phone}</p>
+                <p>Email: {donor.email}</p>
+                <Link to={`/donors/${donor._id}`} className="btn-view">View Profile</Link>
+              </div>
+            </div>
           ))}
         </div>
       )}
+    </div>
     </div>
   )
 }
